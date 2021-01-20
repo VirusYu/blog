@@ -1,14 +1,13 @@
 ---
-title: Flex弹性布局实现九种色子布局
+title: 函数柯里化
 date: 2021-01-20
 tags:
- - CSS
- - Flex
+ - JavaScript
 categories:
- - CSS
+ - JavaScript
  - 前端基本功
 publish: true
 ---
 [[toc]]
 
-flex布局
+函数柯里化
