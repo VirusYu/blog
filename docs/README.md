@@ -2,8 +2,6 @@
 home: true
 title: 二狗
 date: 2021-01-20
-tags: 首页
-categories: 首页
 heroText: 二狗 の 技术分享 & 生活记事
 heroImage: /image/avatar.jpeg
 heroImageStyle: {
