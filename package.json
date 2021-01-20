@@ -1,0 +1,24 @@
+{
+  "name": "myblog",
+  "version": "1.0.0",
+  "description": "个人博客",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/VirusYu/blog.git"
+  },
+  "author": "yuchengxin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/VirusYu/blog/issues"
+  },
+  "homepage": "https://github.com/VirusYu/blog#readme",
+  "devDependencies": {
+    "vuepress": "^1.8.0"
+  }
+}
