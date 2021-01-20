@@ -3,6 +3,11 @@ module.exports = {
   theme: 'reco',
   description: '不忘初心，方得始终',
   head: [[('link', { rel: 'shortcut icon', href: '/image/dog.png' })], ['meta', { name: 'viewport', content: 'width=device-width,initial-scale=1,user-scalable=no' }]],
+  locales: {
+    '/': {
+      lang: 'zh-CN'
+    }
+  },
   themeConfig: {
     type: 'blog',
     authorAvatar: '/image/avatar.jpeg',
