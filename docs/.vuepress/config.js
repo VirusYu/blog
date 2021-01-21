@@ -2,11 +2,11 @@ module.exports = {
   title: '二狗',
   theme: 'reco',
   description: '不忘初心，方得始终',
-  head: [[('link', { rel: 'shortcut icon', href: '/image/dog.png' })], ['meta', { name: 'viewport', content: 'width=device-width,initial-scale=1,user-scalable=no' }]],
+  head: [['link', { rel: 'shortcut icon', type: 'image/x-icon', href: `./favicon.ico` }]],
   locales: {
     '/': {
-      lang: 'zh-CN'
-    }
+      lang: 'zh-CN',
+    },
   },
   themeConfig: {
     type: 'blog',
@@ -23,6 +23,7 @@ module.exports = {
       },
       socialLinks: [
         // 信息栏展示社交信息
+        { icon: 'reco-qq', link: 'tencent://message/?uin=592075466&Site=&Menu=yes' },
         { icon: 'reco-github', link: 'https://github.com/VirusYu' },
       ],
       // 项目开始时间，只填写年份
