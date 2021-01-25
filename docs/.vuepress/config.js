@@ -1,15 +1,20 @@
 module.exports = {
   title: '二狗',
   theme: 'reco',
-  description: '不忘初心，方得始终',
-  head: [['link', { rel: 'shortcut icon', type: 'image/x-icon', href: `./favicon.ico` }]],
   locales: {
     '/': {
       lang: 'zh-CN',
     },
   },
+  description: '不忘初心，方得始终',
+  head: [['link', { rel: 'shortcut icon', type: 'image/x-icon', href: `./favicon.ico` }]],
   themeConfig: {
     type: 'blog',
+    locales: {
+      '/': {
+        lang: 'zh-CN',
+      },
+    },
     authorAvatar: '/image/avatar.jpeg',
     // 博客配置
     blogConfig: {
