@@ -27,4 +27,57 @@ for (var i = 0; i < 10; i++) {
 
 ## 改进
 
-那么问题来了如何让
+那么问题来了如何让上述代码按照预期执行呢，也就是让程序每过一秒输出对应的 1、2、3
+
+### 方法一
+
+使用`let`，`let`存在块级作用域，不存在变量提升
+
+```js
+for (let i = 0; i < 10; i++) {
+  setTimeout(() => {
+    console.log(i)
+  }, i * 1000)
+}
+```
+
+### 方法二
+
+使用函数来传递参数，因为`number`，`string`是值传递，所以对函数内部不会有影响
+
+```js
+function log(value) {
+  setTimeout(() => {
+    console.log(value)
+  }, value * 1000)
+}
+for (var i = 0; i < 10; i++) {
+  log(i);
+}
+```
+
+### 方法三
+
+其实是方法二的变种，没有本质的区别
+
+```js
+for (var i = 0; i < 10; i++) {
+  (function(v){
+    setTimeout(() => {
+      console.log(v)
+    }, v * 1000)
+  })(i)
+}
+```
+
+### 方法四
+
+使用`setTimeout`的[额外参数](https://developer.mozilla.org/zh-CN/docs/Web/API/Window/setTimeout)，可以作为参数传递给function
+
+```js
+for (var i = 0; i < 10; i++) {
+    setTimeout((v) => {
+      console.log(v)
+    }, i * 1000, i)
+}
+```
