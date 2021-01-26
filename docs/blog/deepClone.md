@@ -1,6 +1,6 @@
 ---
-title: js实现深拷贝
-date: 2021-01-25
+title: 手写深拷贝与浅拷贝
+date: 2021-01-26
 tags:
  - JavaScript
  - 前端
@@ -11,4 +11,12 @@ publish: true
 ---
 [[toc]]
 
-js神拷贝
+# 深拷贝与浅拷贝
+
+## 实现浅拷贝
+
+## 实现深拷贝
+
+### JSON.stringify && JSON.parse 
+
+### 手写deepClone
