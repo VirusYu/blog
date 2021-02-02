@@ -142,8 +142,28 @@ console.log(obj2.hobby);// ['撸代码'']
  - 对于基本数据类型，我们直接拷贝即可
  - 对于引用数据类型，则需要进行递归拷贝。
 
-### 使用`weakSet`处理循环引用
+我们先实现一版最基础的`deepClone`，能够对对象和数组进行深拷贝
+
+```js
+function isObject(target) {
+  const type = typeof target
+  // 首先判断 target是不是null， 因为typeof null结果也为 object
+  return type !== null && (type === 'object' || type === 'function')
+}
+function deepClone(target) {
+  if (!isObject(target)) return target
+  let cloneTarget = {}
+  if (Array.isArray(target)) {
+    cloneTarget = []
+  }
+  Object.keys(target).forEach((k) => {
+    cloneTarget[k] = deepClone(target[k])
+  })
+  return cloneTarget
+}
+```
+
+### 使用 `weakSet` 处理循环引用
 
 ### 处理 `symbol` 类型
-
 ### 处理其他引用类型
