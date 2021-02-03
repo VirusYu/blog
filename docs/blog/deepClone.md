@@ -262,5 +262,240 @@ const stringTag = '[object String]'
 const symbolTag = '[object Symbol]'
 const dateTag = '[object Date]'
 const errorTag = '[object Error]'
+```
+#### 创建拷贝对象
+
+获取到了具体的引用类型后，我们可以根据对应的类型进行初始化对象的操作。通过`target.constructor`拿到拷贝对象的构造函数，通过源对象的构造函数生成的对象可以保留对象原型上的数据，如果使用`{}`，则原型上的数据会丢失。
+
+ - `Boolean`、`Number`、`String`、`Date`、`Error`我们可以直接通过构造函数和原始数据创建一个新的对象。
+ - `Object`、`Map`、`Set`我们直接执行构造函数返回初始值，递归处理后续属性，因为它们的属性可以保存对象。
+ - `Array`、`Symbol`、`RegExp`进行特殊处理。
+
+
+```js
+function initCloneTargetByTag(target, tag) {
+  const Ctor = target.constructor;
+  switch (tag) {
+    case boolTag:
+    case dateTag:
+      return new Ctor(+target);
+
+    case numberTag:
+    case stringTag:
+    case errorTag:
+      return new Ctor(target);
+
+    case objectTag:
+    case mapTag:
+    case setTag:
+      return new Ctor();
+
+    case arrayTag:
+      return cloneArray(target);
+
+    case symbolTag:
+      return cloneSymbol(target);
+
+    case regexpTag:
+      return cloneRegExp(target);
+  }
+}
+function deepClone(target, cache = new WeakSet()) {
+  ...
+
+  const tag = Object.prototype.toString.call(target);
+  let cloneTarget = initCloneTargetByTag(target, tag); // 使用拷贝对象的构造方法创建对应类型的数据
+
+  ...
+}
+
+```
+
+#### 初始化 Array
+
+`cloneArray` 是为了兼容处理匹配正则时执行`exec()`后的返回结果，`exec()`方法会返回一个数组，其中包含了额外的`index`和`input`属性。
+
+```js
+function cloneArray(array) {
+  const { length } = array;
+  const result = new array.constructor(length);
+
+  if (length && typeof array[0] === 'string' && hasOwnProperty.call(array, 'index')) {
+      result.index = array.index;
+      result.input = array.input;
+  }
+  return result;
+}
+
+```
+
+#### 初始化 Symbol
+
+```js
+function cloneSymbol(symbol) {
+  return Object(Symbol.prototype.valueOf.call(symbol));
+}
+```
+
+#### 初始化 RegExp
+
+```js
+function cloneRegExp(regexp) {
+  const reFlags = /\w*$/; // \w 用于匹配字母，数字或下划线字符，相当于[A-Za-z0-9_]
+  const result = new regexp.constructor(regexp.source, reFlags.exec(regexp)); // 返回当前匹配的文本
+  result.lastIndex = regexp.lastIndex; // 下一次匹配的起始索引
+  return result;
+}
+```
+
+#### 处理Map和Set
+
+`map`和`set`有通过独有的`set`、`add`方法设置值，单独处理。
+
+```js
+function deepClone(target, cache = new WeakSet()) {
+  ...
+
+  if (tag === mapTag) {
+    target.forEach((value, key) => {
+        cloneTarget.set(key, deepClone(value, map));
+    });
+    return cloneTarget;
+  }
+
+  if (tag === setTag) {
+    target.forEach(value => {
+        cloneTarget.add(deepClone(value, map));
+    });
+    return cloneTarget;
+  }
+
+  ...
+}
+
+```
+
+#### 处理函数
+
+事实上，我们直接使用同一个内存地址的函数是没问题的，所以我们可以直接返回该函数，`lodash`上也是这么处理的。
+
+```js
+function deepClone(target, cache = new WeakSet()) {
+  ...
+
+  if (tag === functionTag) {
+    return target;
+  }
+  
+  ...
+}
+
+```
+
+## 完整代码
+
+```js
+const arrayTag = '[object Array]'
+const objectTag = '[object Object]'
+const mapTag = '[object Map]'
+const setTag = '[object Set]'
+const functionTag = '[object Function]';
+const boolTag = '[object Boolean]'
+const dateTag = '[object Date]'
+const errorTag = '[object Error]'
+const numberTag = '[object Number]'
+const regexpTag = '[object RegExp]'
+const stringTag = '[object String]'
+const symbolTag = '[object Symbol]'
+
+function cloneArray(array) {
+    const { length } = array;
+    const result = new array.constructor(length);
+  
+    if (length && typeof array[0] === 'string' && hasOwnProperty.call(array, 'index')) {
+        result.index = array.index;
+        result.input = array.input;
+    }
+    return result;
+}
+
+function cloneSymbol(symbol) {
+    return Object(Symbol.prototype.valueOf.call(symbol));
+}
+
+function cloneRegExp(regexp) {
+    const reFlags = /\w*$/;
+    const result = new regexp.constructor(regexp.source, reFlags.exec(regexp));
+    result.lastIndex = regexp.lastIndex;
+    return result;
+}
+
+function initCloneTargetByTag(target, tag) {
+    const Ctor = target.constructor;
+    switch (tag) {
+        case boolTag:
+        case dateTag:
+            return new Ctor(+target);
+
+        case numberTag:
+        case stringTag:
+        case errorTag:
+            return new Ctor(target);
+
+        case objectTag:
+        case mapTag:
+        case setTag:
+            return new Ctor();
+
+        case arrayTag:
+            return cloneArray(target);
+
+        case symbolTag:
+            return cloneSymbol(target);
+
+        case regexpTag:
+            return cloneRegExp(target);
+    }
+}
+
+function isObject(target) {
+    const type = typeof target;
+    return target !== null && (type === 'object' || type === 'function');
+}
+
+function deepClone(target, cache = new WeakSet()) {
+    if (!isObject(target)) return target; // 拷贝基本类型值
+
+    if (cache.has(target)) return target;
+
+    cache.add(target);
+
+    const tag = Object.prototype.toString.call(target);
+    let cloneTarget = initCloneTargetByTag(target, tag); // 使用拷贝对象的构造方法创建对应类型的数据
+
+    if (tag === mapTag) {
+        target.forEach((value, key) => {
+            cloneTarget.set(key, deepClone(value, map));
+        });
+        return cloneTarget;
+    }
+
+    if (tag === setTag) {
+        target.forEach(value => {
+            cloneTarget.add(deepClone(value, map));
+        });
+        return cloneTarget;
+    }
+
+    if (tag === functionTag) {
+        return target;
+    }
+
+    Reflect.ownKeys(target).forEach(key => {
+        cloneTarget[key] = deepClone(target[key], cache); // 递归拷贝属性
+    });
+
+    return cloneTarget;
+}
 
 ```
