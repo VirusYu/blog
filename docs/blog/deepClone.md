@@ -218,7 +218,7 @@ function deepClone(target, cache = new WeakSet()) {
 
 ```js
 let symbol = Symbol('symbol');
-let obj = { name: '二狗', [symbol]: '' };
+let obj = { name: '二狗', [symbol]: '111' };
 const obj2 = deepClone(obj);
 console.log(obj2); // { name: "二狗" }
 ```
@@ -226,6 +226,24 @@ console.log(obj2); // { name: "二狗" }
 可以看到，深拷贝后是拿不到`Symbol`为key的属性的，这时候可以通过`Object.getOwnPropertySymbols()`来获取到对象上面所有的`Symbol`键。但是我们不仅仅需要获取`Symbol`属性，还需要获取其他属性，我们可以使用`Reflect.ownKeys()`来拿到对象的所有属性。
 [mdn reflect](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect)、[mdn reflect ownKeys](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect/ownKeys)
 
+```js
+function deepClone(target, cache = new WeakSet()) {
+  if (!isObject(target)) return target; // 拷贝基本类型值
+  if (cache.has(target)) return target;
+  cache.add(target);
+
+  let cloneTarget = Array.isArray(target) ? [] : {}; // 判断拷贝的是否是数组
+  Reflect.ownKeys(target).forEach(key => {
+      cloneTarget[key] = deepClone(target[key], cache); // 递归拷贝属性
+  });
+  return cloneTarget;
+}
+
+let symbol = Symbol('symbol');
+let obj = { name: '二狗', [symbol]: '111' };
+const obj2 = deepClone(obj);
+console.log(obj2); // { name: "二狗"，Symbol(symbol): "111" }
+```
 ### 处理其他引用类型
 
 上面只处理了数组和对象，还有其他的很多引用类型的值没进行处理，我们需要先要判断要拷贝的是什么类型的对象，我们可以使用`Object.prototype.toString.call()`来获取对象的准确类型。
