@@ -163,7 +163,86 @@ function deepClone(target) {
 }
 ```
 
+通过代码简单测试一下，可以发现已经实现基础的深拷贝了
+
+```js
+var obj = {
+  name: 'test',
+  age: '12',
+  child: ['x', 'y'],
+}
+var obj1 = deepClone(obj)
+obj.child.push('z')
+console.log(obj.child) // ["x", "y", "z"]
+console.log(obj1.child) // ["x", "y"]
+```
+
 ### 使用 `weakSet` 处理循环引用
 
+什么是循环引用？就是在对象内部引用对象本身，类似于递归
+
+```js
+let obj = { name: '二狗' };
+obj.info = obj;
+console.log(obj);
+```
+
+如果深拷贝没有对这种情况做处理的话，遇到循环引用就会导致内存溢出，程序卡死。
+
+如何处理循环引用呢？我们可以`WeakSet`存储拷贝过的对象，当拷贝当前对象时，先去存储空间查找该对象是否被拷贝过，如果拷贝过，直接返回该对象，如果没有拷贝过就继续拷贝。
+
+`WeakSet` 对象是一些对象值的集合, 并且其中的每个对象值都只能出现一次。
+
+`WeakSet`持弱引用：集合中对象的引用为弱引用。 如果没有其他的对`WeakSet`中对象的引用，那么这些对象会被当成垃圾回收掉。 这也意味着`WeakSet`中没有存储当前对象的列表。 正因为这样，`WeakSet` 是不可枚举的。[MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/WeakSet)
+
+```js
+function deepClone(target, cache = new WeakSet()) {
+  if (!isObject(target)) return target
+  if (cache.has(target)) return target
+  cache.add(target)
+
+  let cloneTarget = {}
+  if (Array.isArray(target)) {
+    cloneTarget = []
+  }
+  Object.keys(target).forEach((k) => {
+    cloneTarget[k] = deepClone(target[k])
+  })
+  return cloneTarget
+}
+```
+
 ### 处理 `symbol` 类型
+
+`Symbol` 值作为键名，无法被`Object.keys()`、`Object.getOwnPropertyNames()`、`for..in`、`for..of`获取到。
+
+```js
+let symbol = Symbol('symbol');
+let obj = { name: '二狗', [symbol]: '' };
+const obj2 = deepClone(obj);
+console.log(obj2); // { name: "二狗" }
+```
+
+可以看到，深拷贝后是拿不到`Symbol`为key的属性的，这时候可以通过`Object.getOwnPropertySymbols()`来获取到对象上面所有的`Symbol`键。但是我们不仅仅需要获取`Symbol`属性，还需要获取其他属性，我们可以使用`Reflect.ownKeys()`来拿到对象的所有属性。
+[mdn reflect](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect)、[mdn reflect ownKeys](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Reflect/ownKeys)
+
 ### 处理其他引用类型
+
+上面只处理了数组和对象，还有其他的很多引用类型的值没进行处理，我们需要先要判断要拷贝的是什么类型的对象，我们可以使用`Object.prototype.toString.call()`来获取对象的准确类型。
+
+类型判断可以参考此文[typeof、instanceof 和 Object.prototype.toString判断类型的区别](/blog/types.html)
+
+```js
+const arrayTag = '[object Array]'
+const objectTag = '[object Object]'
+const mapTag = '[object Map]'
+const setTag = '[object Set]'
+const regexpTag = '[object RegExp]'
+const boolTag = '[object Boolean]'
+const numberTag = '[object Number]'
+const stringTag = '[object String]'
+const symbolTag = '[object Symbol]'
+const dateTag = '[object Date]'
+const errorTag = '[object Error]'
+
+```
