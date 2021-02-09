@@ -178,5 +178,3 @@ module.exports = {
  <!-- built files will be auto injected -->
 
 ```
-
-结语
