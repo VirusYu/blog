@@ -34,3 +34,86 @@ LazyMan('Hank').sleepFirst(5).eat('supper')
 ```
 
 ## 实现链式调用
+
+先实现一个基础的`class`，可以实现`log`和链式调用
+
+```js
+class LazyManClass {
+  sayHello(name) {
+    console.log(`Hi!This is ${name}~`)
+    return this
+  }
+
+  eat(food) {
+    console.log(`Eat ${food}~`)
+    return this
+  }
+}
+```
+
+## 实现任务队列
+
+通过维护一个任务队列，每次调用方法都会往任务队列里去添加一个箭头函数，需要注意的是
+ - 在`sleep`时，去`push`一个`promise`，在定时器里去`resolve`，在`run`方法里去通过`async`、`await`去实现同步
+ - 在`LazyMan`函数中，执行时可以发现通过`queueMicrotask`去手动维护了一个微任务，这样在`run`的时候，任务队列里就会有所有的操作
+
+```js
+class LazyManClass {
+  taskQueue = []
+
+  sayHello(name) {
+    this.taskQueue.push(() => console.log(`Hi!This is ${name}~`))
+    return this
+  }
+
+  eat(food) {
+    this.taskQueue.push(() => console.log(`Eat ${food}~`))
+    return this
+  }
+
+  sleep(wait) {
+    this.taskQueue.push(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => {
+            console.log(`Wake up after ${wait}`)
+            resolve()
+          }, wait * 1000)
+        })
+    )
+    return this
+  }
+
+  sleepFirst(wait) {
+    this.taskQueue.unshift(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => {
+            console.log(`Wake up after ${wait}`)
+            resolve()
+          }, wait * 1000)
+        })
+    )
+    return this
+  }
+
+  async run() {
+    while (this.taskQueue.length) {
+      await this.taskQueue.shift()()
+    }
+    return this
+  }
+}
+
+function LazyMan(name) {
+  const _lazyMan = new LazyManClass()
+  if (name) {
+    _lazyMan.sayHello(name)
+  }
+  queueMicrotask(() => _lazyMan.run())
+  return _lazyMan
+}
+
+LazyMan('Hank').eat('apple').sleep(3).eat('dinner').sleepFirst(1)
+
+```
