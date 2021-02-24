@@ -56,7 +56,6 @@ class LazyManClass {
 通过维护一个任务队列，每次调用方法都会往任务队列里去添加一个箭头函数，需要注意的是
  - 在`sleep`时，去`push`一个`promise`，在定时器里去`resolve`，在`run`方法里去通过`async`、`await`去实现同步
  - 在`LazyMan`函数中，执行时可以发现通过`queueMicrotask`去手动维护了一个微任务，这样在`run`的时候，任务队列里就会有所有的操作
-
 ```js
 class LazyManClass {
   taskQueue = []
