@@ -56,31 +56,118 @@ function test() {
 test()
 console.log(message) // hi
 ```
+
 > 虽然可以忽略`var`操作符来定义全局变量，但是这样会使代码难以维护，而且会在严格模式下报错。
 
-#### var声明提升
+#### var 声明提升
 
 `var`在声明变量时，会将所有变量声明拉倒作用域的顶部，然后执行到对应地方再去赋值
 
 ```js
-
-function foo(){ 
-  console.log(age);
+function foo() {
+  console.log(age)
   var age = 26
 }
 foo() // undefined
-
 ```
-以上代码等价于
-```js
 
-function foo(){ 
-  var age;
-  console.log(age);
+以上代码等价于
+
+```js
+function foo() {
+  var age
+  console.log(age)
   age = 26
 }
 foo() // undefined
 ```
+
 ### let 声明
+
+#### let 和 var 区别 - 作用域
+
+`let`跟`var`最明显的区别就是，`let`声明的范围是块作用域，`var`是函数作用域。
+
+```js
+if (true) {
+  var name = 'Matt'
+  console.log(name) // Matt
+}
+console.log(name) // Matt
+
+if (true) {
+  let age = 26
+  console.log(age) // 26
+}
+console.log(age) // err
+```
+
+`let`不允许同一个块级作用域中出现冗余声明
+
+```js
+var name
+var name
+// nothing
+
+let age
+let age
+// SyntaxError
+```
+
+#### let 和 var 区别 - 暂时性死区
+
+`let`声明的变量不会在作用域中被提升，在`let`声明之前的执行瞬间被称为“暂时性死区”。
+
+```js
+console.log(name) // undefined
+var name = 'Matt'
+
+console.log(age)
+let age = 26 // ReferenceError： age没有定义
+```
+
+#### let 和 var 区别 - 全局声明
+
+与`var`不同，使用`let`在全局作用域中声明的变量不会成为`window`对象的属性
+
+```js
+var name = 'Matt'
+console.log(window.name) // 'Matt'
+
+let age = 26
+console.log(window.age) // undefined
+```
+
+#### let 和 var 区别 - 条件声明
+
+在使用`var`声明变量的时候，由于会发生变量提升，JS 引擎会自动将多余的声明在作用域顶部合并为一个声明。因为`let`是块级作用域，所以不可能检查前面是否已经使用`let`声明过同名变量，同时也就不可能在没有声明的情况下声明它。
+
+```html
+<script>
+  var name = 'Mate'
+  let age = 26
+</script>
+
+<script>
+  var name = 'ErGou' // 没有问题， 因为变量声明会提升
+  let age = 26 // 之前已经用let声明过age了，就会报错
+</script>
+```
+
+#### let 和 var 区别 - for 循环中的 let 声明
+
+在`let`出现之前，`for`循环定义的迭代变量，会渗透到循环体外部，改成使用`let`之后这个问题就解决了，因为迭代变量的作用域仅限于`for`循环块内
+
+```js
+for (var i = 0; i < 5; i++) {
+  // do something
+}
+console.log(i) // 5
+
+for (let i = 0; i < 5; i++) {
+  // do something
+}
+console.log(i) //  ReferenceError： i没有定义
+```
 
 ### const 声明
