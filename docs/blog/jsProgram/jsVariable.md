@@ -142,16 +142,12 @@ console.log(window.age) // undefined
 
 在使用`var`声明变量的时候，由于会发生变量提升，JS 引擎会自动将多余的声明在作用域顶部合并为一个声明。因为`let`是块级作用域，所以不可能检查前面是否已经使用`let`声明过同名变量，同时也就不可能在没有声明的情况下声明它。
 
-```html
-<script>
-  var name = 'Mate'
-  let age = 26
-</script>
+```js
+var name = 'Mate'
+let age = 26
 
-<script>
-  var name = 'ErGou' // 没有问题， 因为变量声明会提升
-  let age = 26 // 之前已经用let声明过age了，就会报错
-</script>
+var name = 'ErGou' // 没有问题， 因为变量声明会提升
+let age = 26 // 之前已经用let声明过age了，就会报错
 ```
 
 #### let 和 var 区别 - for 循环中的 let 声明
@@ -171,3 +167,19 @@ console.log(i) //  ReferenceError： i没有定义
 ```
 
 ### const 声明
+
+`const`和`let`基本相同，唯一一个重要区别就是，它声明变量时必须同时初始化变量，且尝试修改`const`声明的变量则会导致运行时报错。
+
+```js
+const age = 26
+age = 36 // TypeError 给常量赋值
+
+const name = 'a'
+const name = 'b' // SyntaxError const不允许重复声明
+
+const name = 'Matt'
+if(true){
+  const name = 'ErGou'
+}
+console.log(name) // Matt  const作用域也是块
+```
