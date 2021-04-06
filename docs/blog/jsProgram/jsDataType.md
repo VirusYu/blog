@@ -88,3 +88,9 @@ let floatNum = 3.1415E7 // 等价于31415000
 要确定一个值是不是有限大，可以通过`isFinite()`函数来判断。
 
 > 使用`Number.NEGATIVE_INFINITY`和`Number.POSITIVE_INFINITY`也可以获取负无穷和正无穷，这两个属性包含的值就是`-Infinity`h和`Infinity`。
+
+### NaN
+
+### 数值转换
+
+## String类型
