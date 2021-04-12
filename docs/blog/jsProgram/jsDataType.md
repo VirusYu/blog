@@ -96,8 +96,6 @@ console.log(0 / 0) // NaN
 console.log(-0 / +0) // NaN
 ```
 
-
-
 ### 数值转换
 
 ## String 类型
