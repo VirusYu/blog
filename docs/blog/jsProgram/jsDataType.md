@@ -169,3 +169,92 @@ let num6 = parseFloat('3.125e7') // 31250000
 ```
 
 ## String 类型
+
+`String`类型表示零或多个16位`Unicode`字符序列。字符串可以使用双引号(`"`)、单引号(`'`)或反引号(`)表示。
+
+```js
+let firstName = "二狗";
+let lastName = '二狗';
+let lastName = `二狗`
+```
+
+### 字符字面量
+
+`String`数据类型中包含一些字符字面量，用于表示非打印字符或者有其他用途的字符。
+
+| 字面量      | 含义 |
+| ----------- | ----------- |
+| \n      | 换行       |
+| \t   | 制表        |
+| \b   | 退格        |
+| \r  | 回车        |
+| \f  | 换页        |
+| \\   | 反斜杠        |
+| \'   | 单引号        |
+| \"   | 双引号        |
+| \`   | 反引号        |
+| \xnn   |   以十六进制编码 nn 表示的字符（其中 n 是十六进制数字 0~F），例如\x41 等于"A"      |
+| \t   | 以十六进制编码 nnnn 表示的 Unicode 字符（其中 n 是十六进制数字 0~F），例如\u03a3 等于希腊字
+符"Σ"        |
+
+### 字符串的特变
+
+`ECMAScript`中的字符串是不可变的，一旦声明他们的值就不能变了，要修改某个变量中的字符串值，必须先销毁原始的字符串，然后将包含新值的另一个字符串保存到该变量。
+
+### 转换为字符串
+
+有两种凡是把一个值转换为字符串。
+
+#### toString
+
+首先是使用几乎所有值都有的`toString()`方法，这个方法唯一的用途是返回当前值的字符串等价物，如：
+
+```js
+let age = 11;
+let ageAsString = age.toString(); // 字符串"11"
+let found = true;
+let foundAsString = found.toString(); // 字符串"true"
+```
+
+`toString`方法适用于数值、布尔值、对象和字符串，`null`和`undefind`没有`toString`方法。
+
+### 模板字面量
+
+模板字面量保留换行字符，可以跨行定义字符串：
+
+```js
+let myMultiLineString = 'first line\nsecond line';
+let myMultiLineTemplateLiteral = `first line
+second line`;
+```
+
+### 字符串插值
+
+就是往字符串中插入一个或多个值，要注意的是模板字面量不是字符串，其实是一种特殊的`JavaScript`句法表达式，最后求值得到的是字符串。**模板字面量在定义时立即求值并转换为字符串实例，任何插入的变量也会从它们最接近的作
+用域中取值。**
+
+字符串插值通过在${}中使用一个 JavaScript 表达式实现：
+
+```js
+let value = 5;
+let exponent = 'second';
+// 以前，字符串插值是这样实现的：
+let interpolatedString =
+ value + ' to the ' + exponent + ' power is ' + (value * value);
+// 现在，可以用模板字面量这样实现：
+let interpolatedTemplateLiteral =
+ `${ value } to the ${ exponent } power is ${ value * value }`;
+console.log(interpolatedString); // 5 to the second power is 25
+console.log(interpolatedTemplateLiteral); // 5 to the second power is 25 
+```
+所有插入的值都会使用 toString()强制转型为字符串，而且任何 JavaScript 表达式都可以用于插值。嵌套的模板字符串无须转义：
+
+```js
+console.log(`Hello, ${ `World` }!`); // Hello, World!
+```
+
+将表达式转换为字符串时会调用 `toString()`：
+```js
+let foo = { toString: () => 'World' };
+console.log(`Hello, ${ foo }!`); // Hello, World! 
+```
