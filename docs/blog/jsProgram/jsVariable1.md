@@ -87,7 +87,7 @@ function setName(obj) {
 }
 let person = new Object();
 setName(person);
-console.log(person.name); // "Nicholas" 
+console.log(person.name);
 ```
 
 ## 确定类型
@@ -110,14 +110,15 @@ console.log(typeof o); // object
 ```
 
 为了解决以上问题，我们可以使用`instanceof`操作符，用法如下：
+
 ```js
 result = variable instanceof constructor
 ```
 
 ```js
-console.log(person instanceof Object); // 变量 person 是 Object 吗？
-console.log(colors instanceof Array); // 变量 colors 是 Array 吗？
-console.log(pattern instanceof RegExp); // 变量 pattern 是 RegExp 吗？
+console.log(person instanceof Object);
+console.log(colors instanceof Array);
+console.log(pattern instanceof RegExp);
 ```
 
 按照定义，所有引用值都是 `Object` 的实例，因此通过 `instanceof` 操作符检测任何引用值和`Object` 构造函数都会返回 `true`。如果用 `instanceof` 检测原始值，则始终会返回 `false`，因为原始值不是对象。
