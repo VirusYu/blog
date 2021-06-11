@@ -20,6 +20,6 @@
   "homepage": "https://github.com/VirusYu/blog#readme",
   "devDependencies": {
     "vuepress": "^1.8.0",
-    "vuepress-theme-reco": "^1.6.1"
+    "vuepress-theme-reco": "^1.6.6"
   }
 }
