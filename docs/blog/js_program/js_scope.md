@@ -39,4 +39,30 @@ function changeColor() {
 }
 changeColor()
 ```
+
 对这个例子而言，函数 `changeColor()`的作用域链包含两个对象：一个是它自己的变量对象（就是定义 arguments 对象的那个），另一个是全局上下文的变量对象。这个函数内部之所以能够访问变量`color`，就是因为可以在作用域链中找到它。
+
+此外，局部作用域中定义的变量可用于在局部上下文中替换全局变量。
+
+```js
+var color = 'blue'
+function changeColor() {
+  let anotherColor = 'red'
+  function swapColors() {
+    let tempColor = anotherColor
+    anotherColor = color
+    color = tempColor
+    // 这里可以访问 color、anotherColor 和 tempColor
+  }
+  // 这里可以访问 color 和 anotherColor，但访问不到 tempColor
+  swapColors()
+}
+// 这里只能访问 color
+changeColor()
+```
+
+内部上下文可以通过作用域链访问外部上下文中的一切。但是外部上下文无法访问内部上下文中的任何东西。上下文之间的连接是线性的、有序的。每个上下文都可以到上一级上下文中去搜索变量和函数，但是任何上下文都补鞥呢到下一级上下文中去搜索。
+
+> 函数参数被认为是当前上下文中的变量，因此也跟上下文中的其他变量遵循相同的访问规则。
+
+### 作用域链增强
