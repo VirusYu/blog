@@ -119,3 +119,126 @@ console.log(a3) // [1, 4, 9, 16]
 console.log(Array.of(1, 2, 3, 4)) // [1, 2, 3, 4]
 console.log(Array.of(undefined)) // [undefined]
 ```
+
+## 数组空位
+
+使用数组字面量初始化数组时，可以使用一串逗号来创建空位（`hole`）。
+
+```js
+const options = [, , , , ,] // 创建包含 5 个元素的数组
+console.log(options.length) // 5
+console.log(options) // [,,,,,]
+```
+
+ES6 新增的方法和迭代器与早期 ECMAScript 版本中存在的方法行为不同。ES6 新增方法普遍将这
+些空位当成存在的元素，只不过值为 undefined：
+
+```js
+const options = [1, , , , 5]
+for (const option of options) {
+  console.log(option === undefined)
+}
+// false
+// true
+// true
+// true
+// false
+
+const a = Array.from([, , ,]) // 使用 ES6 的 Array.from()创建的包含 3 个空位的数组
+for (const val of a) {
+  alert(val === undefined)
+}
+// true
+// true
+// true
+alert(Array.of(...[, , ,])) // [undefined, undefined, undefined]
+for (const [index, value] of options.entries()) {
+  alert(value)
+}
+// 1
+// undefined
+// undefined
+// undefined
+// 5
+```
+
+ES6 之前的方法则会忽略这个空位，但具体的行为也会因方法而异：
+
+```js
+const options = [1, , , , 5]
+// map()会跳过空位置
+console.log(options.map(() => 6)) // [6, undefined, undefined, undefined, 6]
+// join()视空位置为空字符串
+console.log(options.join('-')) // "1----5"
+```
+
+## 数组索引
+
+要取得或设置数组的值，需要使用中括号并提供相应值的数字索引，在中括号中提供的索引表示要访问的值。如果索引小于数组包含的元素数，则返回存储在相应位置的元素，如果把一个值设置给超过数组最大索引的索引，就像示例中的 colors[3]，则数组长度会自动扩展到该索引值加 1。
+
+```js
+let colors = ['red', 'blue', 'green'] // 定义一个字符串数组
+alert(colors[0]) // 显示第一项
+colors[2] = 'black' // 修改第三项
+colors[3] = 'brown' // 添加第四项
+```
+
+## 检测数组
+
+判断一个对象是不是数组，一般情况下可以通过`instanceof`操作符，ES 提供了`Array.isArray()`方法。这个方法的目的就是确定一个值是否为数组，而不用管它是在哪个全局执行上下文中创建的。
+
+## 迭代器方法
+
+在 ES6 中，`Array` 的原型上暴露了 3 个用于检索数组内容的方法：`keys()`、`values()`和`entries()`。`keys()`返回数组索引的迭代器，`values()`返回数组元素的迭代器，而 `entries()`返回索引/值对的迭代器：
+
+```js
+const a = ['foo', 'bar', 'baz', 'qux']
+// 因为这些方法都返回迭代器，所以可以将它们的内容
+// 通过 Array.from()直接转换为数组实例
+const aKeys = Array.from(a.keys())
+const aValues = Array.from(a.values())
+const aEntries = Array.from(a.entries())
+console.log(aKeys) // [0, 1, 2, 3]
+console.log(aValues) // ["foo", "bar", "baz", "qux"]
+console.log(aEntries) // [[0, "foo"], [1, "bar"], [2, "baz"], [3, "qux"]]
+```
+
+## 复制和填充
+
+ES6 新增了两个方法：批量复制方法 `copyWithin()`，以及填充数组方法 `fill()`。这两个方法的函数签名类似，都需要指定既有数组实例上的一个范围，包含开始索引，不包含结束索引。使用这个方法不会改变数组的大小。
+
+使用 `fill()`方法可以向一个已有的数组中插入全部或部分相同的值。开始索引用于指定开始填充的位置，它是可选的。如果不提供结束索引，则一直填充到数组末尾。负值索引从数组末尾开始计算。也可以将负索引想象成数组长度加上它得到的一个正索引：
+
+```js
+const zeroes = [0, 0, 0, 0, 0]
+// 用 5 填充整个数组
+zeroes.fill(5)
+console.log(zeroes) // [5, 5, 5, 5, 5]
+zeroes.fill(0) // 重置
+// 用 6 填充索引大于等于 3 的元素
+zeroes.fill(6, 3)
+console.log(zeroes) // [0, 0, 0, 6, 6]
+zeroes.fill(0) // 重置
+// 用 7 填充索引大于等于 1 且小于 3 的元素
+zeroes.fill(7, 1, 3)
+console.log(zeroes) // [0, 7, 7, 0, 0];
+zeroes.fill(0) // 重置
+```
+
+`copyWithin()`会按照指定范围浅复制数组中的部分内容，然后将它们插入到指定索引开始的位置。
+
+```js
+let ints,
+  reset = () => (ints = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+reset()
+// 从 ints 中复制索引 0 开始的内容，插入到索引 5 开始的位置
+// 在源索引或目标索引到达数组边界时停止
+ints.copyWithin(5)
+console.log(ints) // [0, 1, 2, 3, 4, 0, 1, 2, 3, 4]
+reset()
+// 从 ints 中复制索引 5 开始的内容，插入到索引 0 开始的位置
+ints.copyWithin(0, 5)
+console.log(ints) // [5, 6, 7, 8, 9, 5, 6, 7, 8, 9]
+```
+
+## 转换方法
