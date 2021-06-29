@@ -278,3 +278,17 @@ function compare(value1, value2) {
 ```
 
 ## 操作方法
+
+### concat
+
+`concat()`方法会创建一个当前数组的副本，然后再把它的参数添加到副本末尾，最后返回这个新构建的数组。如果传入一个或多个数组，则 `concat()`会把这些数组的每一项都添加到结果数组。如果参数不是数组，则直接把它们添加到结果数组末尾。
+
+```js
+let colors = ['red', 'green', 'blue']
+let colors2 = colors.concat('yellow', ['black', 'brown'])
+console.log(colors) // ["red", "green","blue"]
+console.log(colors2) // ["red", "green", "blue", "yellow", "black", "brown"]
+```
+
+### slice
+
