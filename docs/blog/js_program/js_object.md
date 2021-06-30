@@ -327,3 +327,41 @@ alert(removed) // yellow，只有一个元素的数组
 
 ## 搜索和位置方法
 
+`ECMAScript` 提供两类搜索数组的方法：按严格相等搜索和按断言函数搜索。
+
+### 严格相等
+
+`ECMAScript` 提供了 3 个严格相等的搜索方法：`indexOf()`、`lastIndexOf()`和 `includes()`。
+
+这些方法都接收两个参数：要查找的元素和一个可选的起始搜索位置。`indexOf()`和 `includes()`方法从数组前头（第一项）开始向后搜索，而 `lastIndexOf()`从数组末尾（最后一项）开始向前搜索。
+
+`indexOf()`和 `lastIndexOf()`都返回要查找的元素在数组中的位置，如果没找到则返回-1。`includes()`返回布尔值，表示是否至少找到一个与指定元素匹配的项。
+
+```js
+let numbers = [1, 2, 3, 4, 5, 4, 3, 2, 1]
+alert(numbers.indexOf(4)) // 3
+alert(numbers.lastIndexOf(4)) // 5
+alert(numbers.includes(4)) // true
+alert(numbers.indexOf(4, 4)) // 5
+alert(numbers.lastIndexOf(4, 4)) // 3
+alert(numbers.includes(4, 7)) // false
+let person = { name: 'Nicholas' }
+let people = [{ name: 'Nicholas' }]
+let morePeople = [person]
+alert(people.indexOf(person)) // -1
+alert(morePeople.indexOf(person)) // 0
+alert(people.includes(person)) // false
+alert(morePeople.includes(person)) // true
+```
+
+### 断言函数
+
+ECMAScript 也允许按照定义的断言函数搜索数组，每个索引都会调用这个函数。断言函数的返回值决定了相应索引的元素是否被认为匹配。断言函数接收 3 个参数：元素、索引和数组本身。其中元素是数组中当前搜索的元素，索引是当前元素的索引，而数组就是正在搜索的数组。断言函数返回真值，表示是否匹配。
+
+`find()`和 `findIndex()`方法使用了断言函数。这两个方法都从数组的最小索引开始。`find()`返回第一个匹配的元素，`findIndex()`返回第一个匹配元素的索引。这两个方法也都接收第二个可选的参数，用于指定断言函数内部 `this` 的值。
+
+## 迭代方法
+
+ECMAScript 为数组定义了 5 个迭代方法。每个方法接收两个参数：以每一项为参数运行的函数，以及可选的作为函数运行上下文的作用域对象（影响函数中 this 的值）。传给每个方法的函数接收 3个参数：数组元素、元素索引和数组本身。
+
+ - ``
