@@ -292,3 +292,38 @@ console.log(colors2) // ["red", "green", "blue", "yellow", "black", "brown"]
 
 ### slice
 
+`slice()`用于创建一个包含原有数组中一个或多个元素的新数组。`slice()`方法可以接收一个或两个参数：返回元素的开始索引和结束索引。如果只有一个参数，则 `slice()`会返回该索引到数组末尾的所有元素。如果有两个参数，则 `slice()`返回从开始索引到结束索引对应的所有元素，其中不包含结束索引对应的元素。这个操作不影响原始数组。
+
+```js
+let colors = ['red', 'green', 'blue', 'yellow', 'purple']
+let colors2 = colors.slice(1)
+let colors3 = colors.slice(1, 4)
+alert(colors2) // green,blue,yellow,purple
+alert(colors3) // green,blue,yellow
+```
+
+### splice
+
+最强大的数组方法应该是`splice`了，splice()的主要目的是在数组中间插入元素，但有 3 种不同的方式使用这个方法。
+
+- 删除，需要给 `splice()`传 2 个参数：要删除的第一个元素的位置和要删除的元素数量。
+- 插入，需要给 `splice()`传 3 个参数：开始位置、0（要删除的元素数量）和要插入的元素，可以在数组中指定的位置插入元素。第三个参数之后还可以传第四个、第五个参数，乃至任意多个要插入的元素。
+- 替换，`splice()`在删除元素的同时可以在指定位置插入新元素，同样要传入 3 个参数：开始位置、要删除元素的数量和要插入的任意多个元素。
+
+`splice()`方法始终返回这样一个数组，它包含从数组中被删除的元素（如果没有删除元素，则返回空数组）。
+
+```js
+let colors = ['red', 'green', 'blue']
+let removed = colors.splice(0, 1) // 删除第一项
+alert(colors) // green,blue
+alert(removed) // red，只有一个元素的数组
+removed = colors.splice(1, 0, 'yellow', 'orange') // 在位置 1 插入两个元素
+alert(colors) // green,yellow,orange,blue
+alert(removed) // 空数组
+removed = colors.splice(1, 1, 'red', 'purple') // 插入两个值，删除一个元素
+alert(colors) // green,red,purple,orange,blue
+alert(removed) // yellow，只有一个元素的数组
+```
+
+## 搜索和位置方法
+
