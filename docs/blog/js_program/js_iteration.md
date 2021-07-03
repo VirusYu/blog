@@ -10,7 +10,7 @@ publish: true
 
 [[toc]]
 
-#
+# 迭代器-生成器
 
 `ECMAScript6` 规范新增了两个高级特性：迭代器和生成器
 
