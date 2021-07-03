@@ -212,3 +212,97 @@ class Foo {
 ```
 
 调用生成器函数会产生一个生成器对象。生成器对象一开始处于暂停执行（`suspended`）的状态。与迭代器相似，生成器对象也实现了 `Iterator` 接口，因此具有 `next()`方法。调用这个方法会让生成器开始或恢复执行。
+
+```js
+function* generatorFn() {}
+const g = generatorFn();
+console.log(g); // generatorFn {<suspended>}
+console.log(g.next); // f next() { [native code] } 
+```
+
+### 通过 yield 中断执行
+
+`yield` 关键字可以让生成器停止和开始执行。生成器函数在遇到 `yield`关键字之前会正常执行。遇到这个关键字后，执行会停止，函数作用域的状态会被保留。停止执行的生成器函数只能通过在生成器对象上调用 `next()`方法来恢复执行：
+
+```js
+function* generatorFn() {
+ yield;
+}
+let generatorObject = generatorFn();
+console.log(generatorObject.next()); // { done: false, value: undefined }
+console.log(generatorObject.next()); // { done: true, value: undefined } 
+```
+
+此时的`yield` 关键字有点像函数的中间返回语句，它生成的值会出现在 `next()`方法返回的对象里。通过 `yield `关键字退出的生成器函数会处在 `done: false` 状态；通过 `return` 关键字退出的生成器函数会处于 `done: true` 状态。
+
+```js
+function* generatorFn() {
+ yield 'foo';
+ yield 'bar';
+ return 'baz';
+}
+let generatorObject = generatorFn();
+console.log(generatorObject.next()); // { done: false, value: 'foo' }
+console.log(generatorObject.next()); // { done: false, value: 'bar' }
+console.log(generatorObject.next()); // { done: true, value: 'baz' } 
+```
+
+生成器函数内部的执行流程会针对每个生成器对象区分作用域。在一个生成器对象上调用 `next()`不会影响其他生成器。
+
+`yield` 关键字只能在生成器函数内部使用，用在其他地方会抛出错误。
+
+### 生成器对象作为可迭代对象
+
+在生成器对象上显式调用 next()`方法的用处并不大。其实，如果把生成器对象当成可迭代对象，那么使用起来会更方便：
+
+```js
+function* generatorFn() {
+ yield 1;
+ yield 2;
+ yield 3;
+}
+for (const x of generatorFn()) {
+ console.log(x);
+}
+// 1
+// 2
+// 3
+```
+
+### 使用 yield 实现输入和输出
+
+除了可以作为函数的中间返回语句使用，`yield` 关键字还可以作为函数的中间参数使用。上一次让生成器函数暂停的 `yield` 关键字会接收到传给 `next()`方法的第一个值。
+
+```js
+
+function* generatorFn(initial) {
+ console.log(initial);
+ console.log(yield);
+ console.log(yield);
+}
+let generatorObject = generatorFn('foo');
+generatorObject.next('bar'); // foo
+generatorObject.next('baz'); // baz
+generatorObject.next('qux'); // qux
+yield 关键字可以同时用于输入和输出，如下例所示：
+function* generatorFn() {
+ return yield 'foo';
+}
+let generatorObject = generatorFn();
+console.log(generatorObject.next()); // { done: false, value: 'foo' }
+console.log(generatorObject.next('bar')); // { done: true, value: 'bar' } 
+```
+
+### 提前终止生成器
+
+与迭代器类似，生成器也支持“可关闭”的概念。一个实现 `Iterator` 接口的对象一定有 `next()`方法，还有一个可选的 `return()`方法用于提前终止迭代器。生成器对象除了有这两个方法，还有第三个方法：`throw()`。
+
+```js
+function* generatorFn() {}
+const g = generatorFn();
+console.log(g); // generatorFn {<suspended>}
+console.log(g.next); // f next() { [native code] }
+console.log(g.return); // f return() { [native code] }
+console.log(g.throw); // f throw() { [native code] } 
+```
+return()和 throw()方法都可以用于强制生成器进入关闭状态。
