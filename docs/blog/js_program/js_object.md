@@ -1,5 +1,5 @@
 ---
-title: JavaScript高级程序设计 - 对象
+title: JavaScript高级程序设计 - Object
 date: 2021-07-02
 tags:
   - JavaScript
