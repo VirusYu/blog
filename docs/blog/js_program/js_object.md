@@ -1,5 +1,5 @@
 ---
-title: JavaScript高级程序设计 - Object
+title: JavaScript高级程序设计 - 理解对象
 date: 2021-07-05
 tags:
   - JavaScript
