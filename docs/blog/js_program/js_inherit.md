@@ -159,6 +159,8 @@ console.log(instance2.colors) // "red,blue,green,black"
 
 基本思路很简单：在子类构造函数中调用父类构造函数。因为毕竟函数就是在特定上下文中执行代码的简单对象，所以可以使用`apply()`和 `call()`方法以新创建的对象为上下文执行构造函数。
 
+> 盗用构造函数可以访问实例的属性，但无法访问父类原型上的属性
+
 ```js
 function SuperType() {
   this.colors = ['red', 'blue', 'green']
@@ -196,3 +198,44 @@ console.log(instance.age) // 29
 ### 盗用构造函数的问题
 
 盗用构造函数的主要缺点，也是使用构造函数模式自定义类型的问题：必须在构造函数中定义方法，因此函数不能重用。此外，子类也不能访问父类原型上定义的方法，因此所有类型只能使用构造函数模式。由于存在这些问题，盗用构造函数基本上也不能单独使用。
+
+## 组合继承
+
+> 顾名思义，组合继承就是将原型链和盗用构造函数组合起来使用。
+
+组合继承（有时候也叫伪经典继承）综合了原型链和盗用构造函数，将两者的优点集中了起来。基本的思路是使用原型链继承原型上的属性和方法，而通过盗用构造函数继承实例属性。这样既可以把方法定义在原型上以实现重用，又可以让每个实例都有自己的属性。
+
+```js
+function SuperType(name) {
+  this.name = name
+  this.colors = ['red', 'blue', 'green']
+}
+SuperType.prototype.sayName = function() {
+  console.log(this.name)
+}
+function SubType(name, age) {
+  // 继承属性
+  SuperType.call(this, name)
+  this.age = age
+}
+// 继承方法
+SubType.prototype = new SuperType()
+SubType.prototype.sayAge = function() {
+  console.log(this.age)
+}
+let instance1 = new SubType('Nicholas', 29)
+instance1.colors.push('black')
+console.log(instance1.colors) // "red,blue,green,black"
+instance1.sayName() // "Nicholas";
+instance1.sayAge() // 29
+let instance2 = new SubType('Greg', 27)
+console.log(instance2.colors) // "red,blue,green"
+instance2.sayName() // "Greg";
+instance2.sayAge() // 27
+```
+
+在这个例子中，`SuperType` 构造函数定义了两个属性，`name` 和 `colors`，而它的原型上也定义了一个方法叫 `sayName()`。`SubType` 构造函数调用了 `SuperType` 构造函数，传入了 `name` 参数，然后又定义了自己的属性 `age`。此外，`SubType.prototype` 也被赋值为 `SuperType` 的实例。原型赋值之后，又在这个原型上添加了新方法 `sayAge()`。这样，就可以创建两个 `SubType` 实例，让这两个实例都有自己的属性，包括 `colors`，同时还共享相同的方法。
+
+组合继承弥补了原型链和盗用构造函数的不足，是`JavaScript` 中使用最多的继承模式。而且组合继承也保留了 `instanceof` 操作符和 `isPrototypeOf()`方法识别合成对象的能力。
+
+## 原型式继承
