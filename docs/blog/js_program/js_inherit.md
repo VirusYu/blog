@@ -238,6 +238,8 @@ instance2.sayAge() // 27
 
 组合继承弥补了原型链和盗用构造函数的不足，是`JavaScript` 中使用最多的继承模式。而且组合继承也保留了 `instanceof` 操作符和 `isPrototypeOf()`方法识别合成对象的能力。
 
+> 组合继承其实也存在效率问题。最主要的效率问题就是父类构造函数始终会被调用两次：一次在是创建子类原型时调用，另一次是在子类构造函数中调用。本质上，子类原型最终是要包含超类对象的所有实例属性，子类构造函数只要在执行时重写自己的原型就行了。
+
 ## 原型式继承
 
 2006 年，Douglas Crockford 写了一篇文章：《JavaScript 中的原型式继承》（“Prototypal Inheritance inJavaScript”）。这篇文章介绍了一种不涉及严格意义上构造函数的继承方法。他的出发点是即使不自定义类型也可以通过原型实现对象之间的信息共享。文章最终给出了一个函数：
@@ -300,3 +302,88 @@ console.log(anotherPerson.name) // "Greg"
 ```
 
 > 原型式继承非常适合不需要单独创建构造函数，但仍然需要在对象间共享信息的场合。但要记住，属性中包含的引用值始终会在相关对象间共享，跟使用原型模式是一样的。
+
+## 寄生式继承
+
+与原型式继承比较接近的一种继承方式是寄生式继承。寄生式继承背后的思路类似于寄生构造函数和工厂模式：创建一个实现继承的函数，以某种方式增强对象，然后返回这个对象。
+
+```js
+function createAnother(original) {
+  let clone = object(original) // 通过调用函数创建一个新对象
+  clone.sayHi = function() {
+    // 以某种方式增强这个对象
+    console.log('hi')
+  }
+  return clone // 返回这个对象
+}
+```
+
+在这段代码中，`createAnother()`函数接收一个参数，就是新对象的基准对象。这个对象 `original`会被传给 `object()`函数，然后将返回的新对象赋值给 `clone`。接着给 `clone`对象添加一个新方法`sayHi()`。最后返回这个对象。可以像下面这样使用 `createAnother()`函数:
+
+```js
+let person = {
+  name: 'Nicholas',
+  friends: ['Shelby', 'Court', 'Van']
+}
+let anotherPerson = createAnother(person)
+anotherPerson.sayHi() // "hi"
+```
+
+这个例子基于 `person` 对象返回了一个新对象。新返回的 `anotherPerson` 对象具有 `person` 的所有属性和方法，还有一个新方法叫 `sayHi()`。寄生式继承同样适合主要关注对象，而不在乎类型和构造函数的场景。`object()`函数不是寄生式继承所必需的，任何返回新对象的函数都可以在这里使用。
+
+> 通过寄生式继承给对象添加函数会导致函数难以重用，与构造函数模式类似.
+
+## 寄生组合继承
+
+组合继承其实也存在效率问题。最主要的效率问题就是父类构造函数始终会被调用两次：一次在是创建子类原型时调用，另一次是在子类构造函数中调用。本质上，子类原型最终是要包含超类对象的所有实例属性，子类构造函数只要在执行时重写自己的原型就行了。再来看一看这个组合继承的例子：
+
+```js
+function SuperType(name) {
+  this.name = name
+  this.colors = ['red', 'blue', 'green']
+}
+SuperType.prototype.sayName = function() {
+  console.log(this.name)
+}
+function SubType(name, age) {
+  SuperType.call(this, name) // 第二次调用 SuperType()
+  this.age = age
+}
+SubType.prototype = new SuperType() // 第一次调用 SuperType()
+SubType.prototype.constructor = SubType
+SubType.prototype.sayAge = function() {
+  console.log(this.age)
+}
+```
+
+寄生式组合继承通过盗用构造函数继承属性，但使用混合式原型链继承方法。基本思路是不通过调用父类构造函数给子类原型赋值，而是取得父类原型的一个副本。说到底就是使用寄生式继承来继承父类原型，然后将返回的新对象赋值给子类原型。寄生式组合继承的基本模式如下所示：
+
+```js
+function inheritPrototype(subType, superType) {
+  let prototype = object(superType.prototype) // 创建对象
+  prototype.constructor = subType // 增强对象
+  subType.prototype = prototype // 赋值对象
+}
+```
+
+这个 inheritPrototype()函数实现了寄生式组合继承的核心逻辑。这个函数接收两个参数：子类构造函数和父类构造函数。在这个函数内部，第一步是创建父类原型的一个副本。然后，给返回的 prototype 对象设置 constructor 属性，解决由于重写原型导致默认 constructor 丢失的问题。最后将新创建的对象赋值给子类型的原型。如下例所示，调用 inheritPrototype()就可以实现前面例子中的子类型原型赋值：
+
+```js
+function SuperType(name) {
+  this.name = name
+  this.colors = ['red', 'blue', 'green']
+}
+SuperType.prototype.sayName = function() {
+  console.log(this.name)
+}
+function SubType(name, age) {
+  SuperType.call(this, name)
+  this.age = age
+}
+inheritPrototype(SubType, SuperType)
+SubType.prototype.sayAge = function() {
+  console.log(this.age)
+}
+```
+
+这里只调用了一次 `SuperType` 构造函数，避免了 `SubType.prototype` 上不必要也用不到的属性，因此可以说这个例子的效率更高。而且，原型链仍然保持不变，因此 `instanceof` 操作符和`isPrototypeOf()`方法正常有效。寄生式组合继承可以算是引用类型继承的最佳模式。
