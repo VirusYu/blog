@@ -460,4 +460,47 @@ for (let [idx, nickname] of p) {
 
 本章前面花了大量篇幅讨论如何使用 ES5 的机制实现继承。ECMAScript 6 新增特性中最出色的一个就是原生支持了类继承机制。虽然类继承使用的是新语法，但背后依旧使用的是原型链。
 
+### 继承基础
+
+`ES6` 类支持单继承。使用 `extends`关键字，就可以继承任何拥有`[[Construct]]`和原型的对象。很大程度上，这意味着不仅可以继承一个类，也可以继承普通的构造函数（保持向后兼容）：
+
+```js
+class Vehicle {}
+// 继承类
+class Bus extends Vehicle {}
+let b = new Bus();
+console.log(b instanceof Bus); // true
+console.log(b instanceof Vehicle); // true
+function Person() {}
+// 继承普通构造函数
+class Engineer extends Person {}
+let e = new Engineer();
+console.log(e instanceof Engineer); // true
+console.log(e instanceof Person); // true
+派生类都会通过原型链访问到类和原型上定义的方法。th
+```
+
+派生类都会通过原型链访问到类和原型上定义的方法。this 的值会反映调用相应方法的实例或者类：
+
+```js
+class Vehicle {
+  identifyPrototype(id) {
+    console.log(id, this)
+  }
+  static identifyClass(id) {
+    console.log(id, this)
+  }
+}
+class Bus extends Vehicle {}
+let v = new Vehicle()
+let b = new Bus()
+b.identifyPrototype('bus') // bus, Bus {}
+v.identifyPrototype('vehicle') // vehicle, Vehicle {}
+Bus.identifyClass('bus') // bus, class Bus {}
+Vehicle.identifyClass('vehicle') // vehicle, class Vehicle {}
+```
+
+> extends 关键字也可以在类表达式中使用，因此 `let Bar = class extends Foo {}`是有效的语法。
+
+### 构造函数、`HomeObject` 和 `super()`
 
