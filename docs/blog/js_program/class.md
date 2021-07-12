@@ -504,3 +504,141 @@ Vehicle.identifyClass('vehicle') // vehicle, class Vehicle {}
 
 ### 构造函数、`HomeObject` 和 `super()`
 
+派生类的方法可以通过 `super` 关键字引用它们的原型。这个关键字只能在派生类中使用，而且仅、限于类构造函数、实例方法和静态方法内部。在类构造函数中使用 `super` 可以调用父类构造函数。
+
+```js
+class Vehicle {
+  constructor() {
+    this.hasEngine = true
+  }
+}
+class Bus extends Vehicle {
+  constructor() {
+    // 不要在调用 super()之前引用 this，否则会抛出 ReferenceError
+    super() // 相当于 super.constructor()
+    console.log(this instanceof Vehicle) // true
+    console.log(this) // Bus { hasEngine: true }
+  }
+}
+new Bus()
+```
+
+在静态方法中可以通过 `super` 调用继承的类上定义的静态方法：
+
+```js
+class Vehicle {
+  static identify() {
+    console.log('vehicle')
+  }
+}
+class Bus extends Vehicle {
+  static identify() {
+    super.identify()
+  }
+}
+Bus.identify() // vehicle
+```
+
+> `ES6` 给类构造函数和静态方法添加了内部特性`[[HomeObject]]`，这个特性是一个指针，指向定义该方法的对象。这个指针是自动赋值的，而且只能在 `JavaScript` 引擎内部访问。`super` 始终会定义为`[[HomeObject]]`的原型。
+
+在使用 super 时要注意几个问题:
+
+- `super` 只能在派生类构造函数和静态方法中使用。
+
+```js
+class Vehicle {
+  constructor() {
+    super()
+    // SyntaxError: 'super' keyword unexpected
+  }
+}
+```
+
+- 不能单独引用 `super` 关键字，要么用它调用构造函数，要么用它引用静态方法。
+
+```js
+class Vehicle {}
+class Bus extends Vehicle {
+  constructor() {
+    console.log(super)
+    // SyntaxError: 'super' keyword unexpected here
+  }
+}
+```
+
+- 调用 `super()`会调用父类构造函数，并将返回的实例赋值给 this。
+
+```js
+class Vehicle {}
+class Bus extends Vehicle {
+  constructor() {
+    super()
+    console.log(this instanceof Vehicle)
+  }
+}
+new Bus() // true
+```
+
+- `super()`的行为如同调用构造函数，如果需要给父类构造函数传参，则需要手动传入
+
+```js
+class Vehicle {
+  constructor(licensePlate) {
+    this.licensePlate = licensePlate
+  }
+}
+class Bus extends Vehicle {
+  constructor(licensePlate) {
+    super(licensePlate)
+  }
+}
+console.log(new Bus('1337H4X')) // Bus { licensePlate: '1337H4X' }
+```
+
+- 如果没有定义类构造函数，在实例化派生类时会调用 `super()`，而且会传入所有传给派生类的参数。
+
+```js
+class Vehicle {
+  constructor(licensePlate) {
+    this.licensePlate = licensePlate
+  }
+}
+class Bus extends Vehicle {}
+console.log(new Bus('1337H4X')) // Bus { licensePlate: '1337H4X' }
+```
+
+- 在类构造函数中，不能在调用 `super()`之前引用 `this`。
+
+```js
+class Vehicle {}
+class Bus extends Vehicle {
+  constructor() {
+    console.log(this)
+  }
+}
+new Bus()
+// ReferenceError: Must call super constructor in derived class
+// before accessing 'this' or returning from derived constructor
+```
+
+- 如果在派生类中显式定义了构造函数，则要么必须在其中调用 `super()`，要么必须在其中返回一个对象。
+
+```js
+class Vehicle {}
+class Car extends Vehicle {}
+class Bus extends Vehicle {
+  constructor() {
+    super()
+  }
+}
+class Van extends Vehicle {
+  constructor() {
+    return {}
+  }
+}
+console.log(new Car()) // Car {}
+console.log(new Bus()) // Bus {}
+console.log(new Van()) // {}
+```
+
+### 抽象基类
