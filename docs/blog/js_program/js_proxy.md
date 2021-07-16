@@ -5,7 +5,7 @@ tags:
   - JavaScript
 categories:
   - JavaScript
-publish: false
+publish: true
 ---
 
 [[toc]]
