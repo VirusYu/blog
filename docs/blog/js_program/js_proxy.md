@@ -490,4 +490,69 @@ proxy.foo = 'bar'
 
 捕获器不变式
 
-如果 `target.property` 不可写且不可配置，则不能修改目标属性的值。如果 `target.property` 不可配置且`[[Set]]`特性为 `undefined`，则不能修改目标属性的值。在严格模式下，处理程序中返回 `false` 会抛出 `TypeErro`r。
+如果 `target.property` 不可写且不可配置，则不能修改目标属性的值。如果 `target.property` 不可配置且`[[Set]]`特性为 `undefined`，则不能修改目标属性的值。在严格模式下，处理程序中返回 `false` 会抛出 `TypeError`。
+
+### has()
+
+`has()`捕获器会在 `in` 操作符中被调用。对应的反射 API 方法为 `Reflect.has()`。
+
+```js
+const myTarget = {}
+const proxy = new Proxy(myTarget, {
+  has(target, property) {
+    console.log('has()')
+    return Reflect.has(...arguments)
+  }
+})
+'foo' in proxy
+// has()
+```
+
+返回值，`has()`必须返回布尔值，表示属性是否存在。返回非布尔值会被转型为布尔值
+
+拦截的操作
+
+- `property in proxy`
+- `property in Object.create(proxy)`
+- `with(proxy) {(property);}`
+- `Reflect.has(proxy, property)`
+
+捕获器处理程序参数
+
+- `target`：目标对象。
+- `property`：引用的目标对象上的字符串键属性。
+
+捕获器不变式
+如果 `target.property` 存在且不可配置，则处理程序必须返回 `true`。
+如果 `target.property` 存在且目标对象不可扩展，则处理程序必须返回 `true`。
+
+### defineProperty()
+
+`defineProperty()`捕获器会在 `Object`.`defineProperty()`中被调用。对应的反射 API 方法为`Reflect.defineProperty()`。
+
+```js
+const myTarget = {}
+const proxy = new Proxy(myTarget, {
+  defineProperty(target, property, descriptor) {
+    console.log('defineProperty()')
+    return Reflect.defineProperty(...arguments)
+  }
+})
+Object.defineProperty(proxy, 'foo', { value: 'bar' })
+// defineProperty()
+```
+
+返回值，`defineProperty()`必须返回布尔值，表示属性是否成功定义。返回非布尔值会被转型为布尔值。
+
+拦截的操作
+
+- `Object.defineProperty(proxy, property, descriptor)`
+- `Reflect.defineProperty(proxy, property, descriptor)`
+
+捕获器处理程序参数
+
+- `target`：目标对象。
+- `property`：引用的目标对象上的字符串键属性。
+- `descriptor`：包含可选的 `enumerable`、`configurable`、`writable`、`value`、`get` 和 `set`定义的对象。
+
+## Proxy好无聊啊 看一遍得了不想写了
