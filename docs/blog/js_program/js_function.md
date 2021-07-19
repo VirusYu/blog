@@ -1,6 +1,6 @@
 ---
 title: JavaScript高级程序设计 - 函数
-date: 2021-07-16
+date: 2021-07-16 20:32
 tags:
   - JavaScript
 categories:
@@ -532,3 +532,5 @@ function King() {
 new King() // King instantiated using "new"
 King() // Error: King must be instantiated using "new"
 ```
+
+## 函数属性与方法
