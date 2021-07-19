@@ -129,3 +129,239 @@ console.log(propertyDescriptor.set.name) // set age
 
 ## 理解参数
 
+ECMAScript 函数的参数跟大多数其他语言不同。ECMAScript 函数既不关心传入的参数个数，也不关心这些参数的数据类型。定义函数时要接收两个参数，并不意味着调用时就传两个参数。你可以传一个、三个，甚至一个也不传，解释器都不会报错。
+
+之所以会这样，主要是因为 `ECMAScript` 函数的参数在内部表现为一个数组。函数被调用时总会接收一个数组，但函数并不关心这个数组中包含什么。如果数组中什么也没有，那没问题；如果数组的元素超出了要求，那也没问题。事实上，在使用 `function` 关键字定义（非箭头）函数时，可以在函数内部访问 `arguments` 对象，从中取得传进来的每个参数值。
+
+`arguments` 对象是一个类数组对象（但不是 `Array` 的实例），因此可以使用中括号语法访问其中的元素（第一个参数是 `arguments[0]`，第二个参数是 `arguments[1]`）。而要确定传进来多少个参数，可以访问 `arguments.length` 属性。
+
+在下面的例子中，sayHi()函数的第一个参数叫 name：
+
+```js
+function sayHi(name, message) {
+  console.log('Hello ' + name + ', ' + message)
+}
+// 可以通过 arguments[0]取得相同的参数值。因此，把函数重写成不声明参数也可以：
+function sayHi() {
+  console.log('Hello ' + arguments[0] + ', ' + arguments[1])
+}
+```
+
+arguments 对象的另一个有意思的地方就是，它的值始终会与对应的命名参数同步。来看下面的例子：
+
+```js
+function doAdd(num1, num2) {
+  arguments[1] = 10
+  console.log(arguments[0] + num2)
+}
+```
+
+这个 `doAdd()`函数把第二个参数的值重写为 10。因为 `arguments` 对象的值会自动同步到对应的命名参数，所以修改 `arguments[1]`也会修改 `num2` 的值，因此两者的值都是 10。但这并不意味着它们都访问同一个内存地址，它们在内存中还是分开的，只不过会保持同步而已。另外还要记住一点：如果只传了一个参数，然后把 `arguments[1]`设置为某个值，那么这个值并不会反映到第二个命名参数。这是因为 `arguments` 对象的长度是根据传入的参数个数，而非定义函数时给出的命名参数个数确定的。
+
+对于命名参数而言，如果调用函数时没有传这个参数，那么它的值就是 `undefined`。这就类似于定义了变量而没有初始化。
+
+严格模式下，`arguments` 会有一些变化。首先，像前面那样给 `arguments[1]`赋值不会再影响 `num2`的值。就算把 `arguments[1]`设置为 `10`，`num2` 的值仍然还是传入的值。其次，在函数中尝试重写`arguments` 对象会导致语法错误。（代码也不会执行。）
+
+### 箭头函数中的参数
+
+如果函数是使用箭头语法定义的，那么传给函数的参数将不能使用 `arguments` 关键字访问，而只能通过定义的命名参数访问。
+
+```js
+function foo() {
+  console.log(arguments[0])
+}
+foo(5) // 5
+let bar = () => {
+  console.log(arguments[0])
+}
+bar(5) // ReferenceError: arguments is not defined
+```
+
+## 没有重载
+
+ECMAScript 函数不能像传统编程那样重载。在其他语言比如 Java 中，一个函数可以有两个定义，只要签名（接收参数的类型和数量）不同就行。如前所述，ECMAScript 函数没有签名，因为参数是由、包含零个或多个值的数组表示的。没有函数签名，自然也就没有重载。如果在 ECMAScript 中定义了两个同名函数，则后定义的会覆盖先定义的。
+
+```js
+function addSomeNumber(num) {
+  return num + 100
+}
+function addSomeNumber(num) {
+  return num + 200
+}
+let result = addSomeNumber(100) // 300
+```
+
+把函数名当成指针也有助于理解为什么 ECMAScript 没有函数重载。在前面的例子中，定义两个同名的函数显然会导致后定义的重写先定义的。而那个例子几乎跟下面这个是一样的：
+
+```js
+let addSomeNumber = function(num) {
+  return num + 100
+}
+addSomeNumber = function(num) {
+  return num + 200
+}
+let result = addSomeNumber(100) // 300
+```
+
+## 默认参数值
+
+ECMAScript5.1 及以前，实现默认参数的一种常用方式就是检测某个参数是否等于 undefined，如果是则意味着没有传这个参数，那就给它赋一个值：
+
+```js
+function makeKing(name) {
+  name = typeof name !== 'undefined' ? name : 'Henry'
+  return `King ${name} VIII`
+}
+console.log(makeKing()) // 'King Henry VIII'
+console.log(makeKing('Louis')) // 'King Louis VIII'
+```
+
+ECMAScript 6 之后就不用这么麻烦了，因为它支持显式定义默认参数了。下面就是与前面代码等价的 ES6 写法，只要在函数定义中的参数后面用=就可以为参数赋一个默认值：
+
+```js
+function makeKing(name = 'Henry') {
+  return `King ${name} VIII`
+}
+console.log(makeKing('Louis')) // 'King Louis VIII'
+console.log(makeKing()) // 'King Henry VIII'
+```
+
+在使用默认参数时，`arguments` 对象的值不反映参数的默认值，只反映传给函数的参数。当然，跟 ES5 严格模式一样，修改命名参数也不会影响 `arguments` 对象，它始终以调用函数时传入的值为准：
+
+```js
+function makeKing(name = 'Henry') {
+  name = 'Louis'
+  return `King ${arguments[0]}`
+}
+console.log(makeKing()) // 'King undefined'
+console.log(makeKing('Louis')) // 'King Louis'
+```
+
+默认参数值并不限于原始值或对象类型，也可以使用调用函数返回的值：
+
+```js
+let romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI']
+let ordinality = 0
+function getNumerals() {
+  // 每次调用后递增
+  return romanNumerals[ordinality++]
+}
+function makeKing(name = 'Henry', numerals = getNumerals()) {
+  return `King ${name} ${numerals}`
+}
+console.log(makeKing())
+console.log(makeKing('Louis', 'XVI')) // 'King Louis XVI'
+console.log(makeKing()) // 'King Henry II'
+console.log(makeKing()) // 'King Henry III' // 'King Henry I'
+```
+
+### 默认参数作用域与暂时性死区
+
+因为在求值默认参数时可以定义对象，也可以动态调用函数，所以函数参数肯定是在某个作用域中求值的。
+
+给多个参数定义默认值实际上跟使用 let 关键字顺序声明变量一样。来看下面的例子：
+
+```js
+function makeKing(name = 'Henry', numerals = 'VIII') {
+  return `King ${name} ${numerals}`
+}
+console.log(makeKing()) // King Henry VIII
+```
+
+参数初始化顺序遵循“暂时性死区”规则，即前面定义的参数不能引用后面定义的。像这样就会抛出错误：
+
+```js
+// 调用时不传第一个参数会报错
+function makeKing(name = numerals, numerals = 'VIII') {
+  return `King ${name} ${numerals}`
+}
+```
+
+参数也存在于自己的作用域中，它们不能引用函数体的作用域：
+
+```js
+// 调用时不传第二个参数会报错
+function makeKing(name = 'Henry', numerals = defaultNumeral) {
+  let defaultNumeral = 'VIII'
+  return `King ${name} ${numerals}`
+}
+```
+
+## 参数拓展与收集
+
+ECMAScript 6 新增了扩展操作符，使用它可以非常简洁地操作和组合集合数据。扩展操作符最有用的场景就是函数定义中的参数列表，在这里它可以充分利用这门语言的弱类型及参数长度可变的特点。扩展操作符既可以用于调用函数时传参，也可以用于定义函数参数。
+
+### 拓展参数
+
+在给函数传参时，有时候可能不需要传一个数组，而是要分别传入数组的元素。
+
+假设有如下函数定义，它会将所有传入的参数累加起来：
+
+```js
+let values = [1, 2, 3, 4]
+function getSum() {
+  let sum = 0
+  for (let i = 0; i < arguments.length; ++i) {
+    sum += arguments[i]
+  }
+  return sum
+}
+```
+
+这个函数希望将所有加数逐个传进来，然后通过迭代 arguments 对象来实现累加。如果不使用扩展操作符，想把定义在这个函数这面的数组拆分，那么就得求助于 apply()方法：
+
+```js
+console.log(getSum.apply(null, values)) // 10
+```
+
+但在 ECMAScript 6 中，可以通过扩展操作符极为简洁地实现这种操作。对可迭代对象应用扩展操作符，并将其作为一个参数传入，可以将可迭代对象拆分，并将迭代返回的每个值单独传入。
+
+```js
+console.log(getSum(...values)) // 10
+```
+
+因为数组的长度已知，所以在使用扩展操作符传参的时候，并不妨碍在其前面或后面再传其他的值，包括使用扩展操作符传其他参数：
+
+```js
+console.log(getSum(-1, ...values)) // 9
+console.log(getSum(...values, 5)) // 15
+console.log(getSum(-1, ...values, 5)) // 14
+console.log(getSum(...values, ...[5, 6, 7])) // 28
+```
+
+### 收集参数
+
+在构思函数定义时，可以使用扩展操作符把不同长度的独立参数组合为一个数组。这有点类似 arguments 对象的构造机制，只不过收集参数的结果会得到一个 Array 实例。
+
+```js
+function getSum(...values) {
+  // 顺序累加 values 中的所有值
+  // 初始值的总和为 0
+  return values.reduce((x, y) => x + y, 0)
+}
+console.log(getSum(1, 2, 3)) // 6
+```
+
+收集参数的前面如果还有命名参数，则只会收集其余的参数；如果没有则会得到空数组。因为收集参数的结果可变，所以只能把它作为最后一个参数：
+
+```js
+// 不可以
+function getProduct(...values, lastValue) {}
+// 可以
+function ignoreFirst(firstValue, ...values) {
+ console.log(values);
+}
+ignoreFirst(); // []
+ignoreFirst(1); // []
+ignoreFirst(1,2); // [2]
+ignoreFirst(1,2,3); // [2, 3]
+```
+
+箭头函数虽然不支持 `arguments` 对象，但支持收集参数的定义方式，因此也可以实现与使用 `arguments` 一样的逻辑：
+
+```js
+let getSum = (...values) => {
+  return values.reduce((x, y) => x + y, 0)
+}
+console.log(getSum(1, 2, 3)) // 6
+```
