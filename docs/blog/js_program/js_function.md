@@ -5,7 +5,7 @@ tags:
   - JavaScript
 categories:
   - JavaScript
-publish: false
+publish: true
 ---
 
 [[toc]]
@@ -364,4 +364,171 @@ let getSum = (...values) => {
   return values.reduce((x, y) => x + y, 0)
 }
 console.log(getSum(1, 2, 3)) // 6
+```
+
+## 函数声明与函数表达式
+
+JavaScript 引擎在任何代码执行之前，会先读取函数声明，并在执行上下文中生成函数定义。而函数表达式必须等到代码执行到它那一行，才会在执行上下文中生成函数定义。
+
+函数声明会在任何代码执行之前先被读取并添加到执行上下文。这个过程叫作函数声明提升（function declaration hoisting）。在执行代码时，`JavaScript` 引擎会先执行一遍扫描，把发现的函数声明提升到源代码树的顶部。因此即使函数定义出现在调用它们的代码之后，引擎也会把函数声明提升到顶部。
+
+```js
+// 没问题
+console.log(sum(10, 10))
+function sum(num1, num2) {
+  return num1 + num2
+}
+// 会出错
+console.log(sum(10, 10))
+let sum = function(num1, num2) {
+  return num1 + num2
+}
+```
+
+## 函数作为值
+
+因为函数名在 ECMAScript 中就是变量，所以函数可以用在任何可以使用变量的地方。这意味着不仅可以把函数作为参数传给另一个函数，而且还可以在一个函数中返回另一个函数。
+
+```js
+function callSomeFunction(someFunction, someArgument) {
+  return someFunction(someArgument)
+}
+```
+
+这个函数接收两个参数。第一个参数应该是一个函数，第二个参数应该是要传给这个函数的值。任何函数都可以像下面这样作为参数传递：
+
+```js
+function add10(num) {
+  return num + 10
+}
+let result1 = callSomeFunction(add10, 10)
+console.log(result1) // 20
+function getGreeting(name) {
+  return 'Hello, ' + name
+}
+let result2 = callSomeFunction(getGreeting, 'Nicholas')
+console.log(result2) // "Hello, Nicholas"
+```
+
+`callSomeFunction()`函数是通用的，第一个参数传入的是什么函数都可以，而且它始终返回调用作为第一个参数传入的函数的结果。要注意的是，如果是访问函数而不是调用函数，那就必须不带括号，所以传给 `callSomeFunction()`的必须是 `add10` 和 `getGreeting`，而不能是它们的执行结果。
+
+## 函数内部参数
+
+在 `ECMAScript 5` 中，函数内部存在两个特殊的对象：`arguments` 和 `this`。`ECMAScript 6` 又新增了 `new.target` 属性。
+
+### arguments
+
+`arguments` 对象前面讨论过多次了，它是一个类数组对象，包含调用函数时传入的所有参数。
+
+这个对象只有以 `function` 关键字定义函数（相对于使用箭头语法创建函数）时才会有。虽然主要用于包含函数参数，但 `arguments` 对象其实还有一个 `callee` 属性，是一个指向 `arguments` 对象所在函数的指针。
+
+来看下面这个经典的阶乘函数：
+
+```js
+function factorial(num) {
+  if (num <= 1) {
+    return 1
+  } else {
+    return num * factorial(num - 1)
+  }
+}
+```
+
+阶乘函数一般定义成递归调用的，就像上面这个例子一样。只要给函数一个名称，而且这个名称不会变，这样定义就没有问题。但是，这个函数要正确执行就必须保证函数名是 `factorial`，从而导致了紧密耦合。使用 `arguments.callee` 就可以让函数逻辑与函数名解耦：
+
+```js
+function factorial(num) {
+  if (num <= 1) {
+    return 1
+  } else {
+    return num * arguments.callee(num - 1)
+  }
+}
+```
+
+这个重写之后的 `factorial()`函数已经用 `arguments.callee` 代替了之前硬编码的 `factorial`。这意味着无论函数叫什么名称，都可以引用正确的函数。考虑下面的情况：
+
+```js
+let trueFactorial = factorial
+factorial = function() {
+  return 0
+}
+console.log(trueFactorial(5)) // 120
+console.log(factorial(5)) // 0
+```
+
+这里，`trueFactorial` 变量被赋值为 `factorial`，实际上把同一个函数的指针又保存到了另一个位置。然后，`factorial` 函数又被重写为一个返回 0 的函数。如果像 `factorial()`最初的版本那样不使用 `arguments.callee`，那么像上面这样调用 ()就会返回 0。不过，通过将函数与名称解耦，`trueFactorial()`就可以正确计算阶乘，而 `factorial()`则只能返回 0。
+
+### this
+
+`this`在标准函数和箭头函数中有不同的行为。在标准函数中，`this` 引用的是把函数当成方法调用的上下文对象，这时候通常称其为 `this` 值（在网页的全局上下文中调用函数时，`this` 指向 `windows`）。来看下面的例子：
+
+```js
+window.color = 'red'
+let o = {
+  color: 'blue'
+}
+function sayColor() {
+  console.log(this.color)
+}
+sayColor() // 'red'
+o.sayColor = sayColor
+o.sayColor() // 'blue'
+```
+
+定义在全局上下文中的函数 `sayColor()`引用了 `this` 对象。这个 `this` 到底引用哪个对象必须到函数被调用时才能确定。因此这个值在代码执行的过程中可能会变。如果在全局上下文中调用`sayColor()`，这结果会输出"red"，因为 `this` 指向 `window`，而 `this.color` 相当于 `window.color`。而在把 `sayColor()`赋值给 `o` 之后再调用 `o.sayColor()`，`this` 会指向 `o`，即 `this.color` 相当于`o.color`，所以会显示"blue"。
+
+在箭头函数中，`this`引用的是定义箭头函数的上下文。下面的例子演示了这一点。在对`sayColor()`的两次调用中，`this` 引用的都是 `window` 对象，因为这个箭头函数是在 `window` 上下文中定义的：
+
+```js
+window.color = 'red'
+let o = {
+  color: 'blue'
+}
+let sayColor = () => console.log(this.color)
+sayColor() // 'red'
+o.sayColor = sayColor
+o.sayColor() // 'red'
+```
+
+### caller
+
+`caller`个属性引用的是调用当前函数的函数，或者如果是
+在全局作用域中调用的则为 `null`。
+
+```js
+function outer() {
+  inner()
+}
+function inner() {
+  console.log(inner.caller)
+}
+outer()
+```
+
+以上代码会显示 `outer()`函数的源代码。这是因为 `ourter()`调用了 `inner()`，`inner.caller`指向 `outer()`。如果要降低耦合度，则可以通过 `arguments.callee.caller` 来引用同样的值：
+
+```js
+function outer() {
+  inner()
+}
+function inner() {
+  console.log(arguments.callee.caller)
+}
+outer()
+```
+
+### new.target
+
+`ECMAScript` 中的函数始终可以作为构造函数实例化一个新对象，也可以作为普通函数被调用。`ECMAScript 6` 新增了检测函数是否使用 `new` 关键字调用的 `new.target` 属性。如果函数是正常调用的，则 `new.target` 的值是 `undefined`；如果是使用 `new` 关键字调用的，则 `new.target` 将引用被调用的构造函数。
+
+```js
+function King() {
+  if (!new.target) {
+    throw 'King must be instantiated using "new"'
+  }
+  console.log('King instantiated using "new"')
+}
+new King() // King instantiated using "new"
+King() // Error: King must be instantiated using "new"
 ```
